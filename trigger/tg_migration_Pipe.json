@@ -1,0 +1,25 @@
+{
+	"name": "tg_migration_Pipe",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pl_migration_ss",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 5,
+				"startTime": "2025-10-13T15:45:00",
+				"endTime": "2025-10-14T15:49:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}

@@ -1,0 +1,6 @@
+{
+	"name": "onprem-selfhosted",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}

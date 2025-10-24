@@ -1,0 +1,9 @@
+{
+	"name": "sep2025dev-adf-ws",
+	"location": "southindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "1c235187-d2eb-4a6e-890c-0b704372ca38",
+		"tenantId": "1b93b8a4-104d-4630-8530-e476780df99b"
+	}
+}
