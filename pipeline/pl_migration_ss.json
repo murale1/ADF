@@ -22,7 +22,7 @@
 					"activities": [
 						{
 							"name": "Copy_onprem_data",
-							"description": "Copy my on prem data (devoncloud) to cloud (devcloudsep)",
+							"description": "Copy my on prem data (devonprem) to cloud (devcloudsep)",
 							"type": "Copy",
 							"dependsOn": [
 								{
@@ -126,7 +126,8 @@
 									"referenceName": "ds_cloud_ss",
 									"type": "DatasetReference",
 									"parameters": {
-										"ds_database_name": "devcloudsep"
+										"ds_database_name": "devcloudsep",
+										"ds_table_name": "test"
 									}
 								}
 							}
