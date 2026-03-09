@@ -1,0 +1,9 @@
+{
+	"name": "new-adf-ingestion",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "c7ad7fe4-e77c-4c7c-a093-140d996de40d",
+		"tenantId": "7c6db177-9285-4dab-bdd6-c2018a480fba"
+	}
+}
