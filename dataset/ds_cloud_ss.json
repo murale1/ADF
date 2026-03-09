@@ -1,0 +1,58 @@
+{
+	"name": "ds_cloud_ss",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_cloud_ss",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"database_name": {
+					"value": "@dataset().ds_database_name",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"ds_database_name": {
+				"type": "string",
+				"defaultValue": "devcloudsep"
+			},
+			"ds_table_name": {
+				"type": "string",
+				"defaultValue": "test"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [
+			{
+				"name": "category_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "category_name",
+				"type": "varchar"
+			},
+			{
+				"name": "created_at",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			},
+			{
+				"name": "updated_at",
+				"type": "datetime",
+				"precision": 23,
+				"scale": 3
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": {
+				"value": "@dataset().ds_table_name",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
