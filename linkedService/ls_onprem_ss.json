@@ -5,12 +5,16 @@
 		"annotations": [],
 		"type": "SqlServer",
 		"typeProperties": {
-			"connectionString": "integrated security=True;data source=.\\SQLEXPRESS;initial catalog=devonprem",
+			"server": ".\\SQLEXPRESS",
+			"database": "devonprem",
+			"encrypt": "mandatory",
+			"trustServerCertificate": true,
+			"authenticationType": "Windows",
 			"userName": "MURALIPC\\mural",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJhOGY5MTMyZC0zNjY4LTQ1ZDktYjI5Yy0yZTAxYWJlMGIwNzMiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI4NmQxN2NjYS00ZTdkLTQ2ZmMtYmQ1MC1kZWFkN2MzZTY3YzQiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
-			"referenceName": "onprem-selfhosted",
+			"referenceName": "dev-adf-ir",
 			"type": "IntegrationRuntimeReference"
 		}
 	}
