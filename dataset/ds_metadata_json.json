@@ -11,6 +11,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"fileName": "metadata.json",
+				"folderPath": "adf_metadata",
 				"fileSystem": "raw"
 			}
 		},
