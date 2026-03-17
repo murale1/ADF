@@ -115,7 +115,7 @@
 								"source": {
 									"type": "SqlServerSource",
 									"sqlReaderQuery": {
-										"value": "Select WatermarkValue as OLDWM from watermarktable where TableName='@{item().TABLE_NAME}'",
+										"value": "Select WatermarkValue as OLDWM from watermarktable where TABLE_NAME='@{item().TABLE_NAME}'",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
