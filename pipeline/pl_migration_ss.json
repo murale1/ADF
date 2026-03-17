@@ -90,7 +90,7 @@
 									"referenceName": "ds_cloud_ss",
 									"type": "DatasetReference",
 									"parameters": {
-										"ds_database_name": "devcloudsep",
+										"ds_database_name": "db-cloud-ss",
 										"ds_table_name": {
 											"value": "@{item().TABLE_NAME}",
 											"type": "Expression"

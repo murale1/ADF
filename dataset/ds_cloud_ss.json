@@ -14,7 +14,7 @@
 		"parameters": {
 			"ds_database_name": {
 				"type": "string",
-				"defaultValue": "dev-cloud-ss"
+				"defaultValue": "db-cloud-ss"
 			},
 			"ds_table_name": {
 				"type": "string",
