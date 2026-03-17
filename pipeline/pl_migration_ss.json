@@ -69,8 +69,22 @@
 									},
 									"sqlWriterUseTableLock": false
 								},
-								"enableStaging": false
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
 							},
+							"inputs": [
+								{
+									"referenceName": "ds_onprem_ss",
+									"type": "DatasetReference"
+								}
+							],
 							"outputs": [
 								{
 									"referenceName": "ds_cloud_ss",
@@ -140,6 +154,10 @@
 									"queryTimeout": "02:00:00",
 									"isolationLevel": "ReadCommitted",
 									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "ds_onprem_ss",
+									"type": "DatasetReference"
 								}
 							}
 						},
