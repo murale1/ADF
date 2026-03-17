@@ -1,0 +1,611 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-data-dev-101"
+		},
+		"ls_cloud_ss_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_cloud_ss'"
+		},
+		"ls_metadata_adls_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_metadata_adls'"
+		},
+		"ls_onprem_ss_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_onprem_ss'"
+		},
+		"ls_metadata_adls_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://externaladls.dfs.core.windows.net/"
+		},
+		"ls_onprem_ss_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": ".\\SQLEXPRESS"
+		},
+		"ls_onprem_ss_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "devonprem"
+		},
+		"ls_onprem_ss_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "MURALIPC\\mural"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_migration_ss')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEachTable",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "GetMetaData",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('GetMetaData').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy_onprem_data",
+									"description": "Copy my on prem data (devonprem) to cloud (devcloudsep)",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "GetOldWM",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										},
+										{
+											"activity": "GetNewWM",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "Select * from @{item().TABLE_NAME} where @{item().WaterMark_Column} > '@{activity('GetOldWM').output.firstRow.OLDWM}' AND @{item().WaterMark_Column} <= '@{activity('GetNewWM').output.firstRow.NEWWM}'",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"isolationLevel": "ReadCommitted",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "SqlServerSink",
+											"writeBehavior": "upsert",
+											"upsertSettings": {
+												"useTempDB": true,
+												"keys": {
+													"value": "@array(item().MERGE_KEY)",
+													"type": "Expression"
+												}
+											},
+											"sqlWriterUseTableLock": false
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_onprem_ss",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_cloud_ss",
+											"type": "DatasetReference",
+											"parameters": {
+												"ds_database_name": "db-cloud-ss",
+												"ds_table_name": {
+													"value": "@{item().TABLE_NAME}",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "GetOldWM",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "Select WatermarkValue as OLDWM from watermarktable where TableName='@{item().TABLE_NAME}'",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"isolationLevel": "ReadCommitted",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "ds_cloud_ss",
+											"type": "DatasetReference",
+											"parameters": {
+												"ds_database_name": "db-cloud-ss",
+												"ds_table_name": "test"
+											}
+										}
+									}
+								},
+								{
+									"name": "GetNewWM",
+									"type": "Lookup",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "SqlServerSource",
+											"sqlReaderQuery": {
+												"value": "Select max(@{item().WaterMark_Column}) as NEWWM from @{item().TABLE_NAME}",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"isolationLevel": "ReadCommitted",
+											"partitionOption": "None"
+										},
+										"dataset": {
+											"referenceName": "ds_onprem_ss",
+											"type": "DatasetReference",
+											"parameters": {}
+										}
+									}
+								},
+								{
+									"name": "update_wm",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "Copy_onprem_data",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[[dbo].[usp_write_watermark]",
+										"storedProcedureParameters": {
+											"LastModifiedtime": {
+												"value": {
+													"value": "@{activity('GetNewWM').output.firstRow.NEWWM}",
+													"type": "Expression"
+												},
+												"type": "Datetime"
+											},
+											"TableName": {
+												"value": {
+													"value": "@{item().TABLE_NAME}",
+													"type": "Expression"
+												},
+												"type": "String"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "ls_cloud_ss",
+										"type": "LinkedServiceReference",
+										"parameters": {
+											"database_name": "db-cloud-ss"
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "GetMetaData",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "JsonSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "JsonReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_metadata_json",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-10-13T15:36:30Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_metadata_json')]",
+				"[concat(variables('factoryId'), '/datasets/ds_onprem_ss')]",
+				"[concat(variables('factoryId'), '/datasets/ds_cloud_ss')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_cloud_ss')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_cloud_ss')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_cloud_ss",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"database_name": {
+							"value": "@dataset().ds_database_name",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"ds_database_name": {
+						"type": "string",
+						"defaultValue": "db-cloud-ss"
+					},
+					"ds_table_name": {
+						"type": "string",
+						"defaultValue": "test"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [
+					{
+						"name": "category_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "category_name",
+						"type": "varchar"
+					},
+					{
+						"name": "created_at",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "updated_at",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().ds_table_name",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_cloud_ss')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_metadata_json')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_metadata_adls",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Json",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "metadata.json",
+						"folderPath": "adf_metadata",
+						"fileSystem": "raw"
+					}
+				},
+				"schema": {
+					"type": "object",
+					"properties": {
+						"TABLE_NAME": {
+							"type": "string"
+						},
+						"WaterMark_Column": {
+							"type": "string"
+						},
+						"MERGE_KEY": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_metadata_adls')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_onprem_ss')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_onprem_ss",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [
+					{
+						"name": "category_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "category_name",
+						"type": "varchar"
+					},
+					{
+						"name": "created_at",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "updated_at",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "CATEGORIES"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_onprem_ss')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_cloud_ss')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"database_name": {
+						"type": "string",
+						"defaultValue": "db-cloud-ss"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('ls_cloud_ss_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "azure-ir",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/azure-ir')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_metadata_adls')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_metadata_adls_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ls_metadata_adls_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "azure-ir",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/azure-ir')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_onprem_ss')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"server": "[parameters('ls_onprem_ss_properties_typeProperties_server')]",
+					"database": "[parameters('ls_onprem_ss_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": true,
+					"authenticationType": "Windows",
+					"userName": "[parameters('ls_onprem_ss_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_onprem_ss_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "dev-adf-ir",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/dev-adf-ir')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tg_migration_Pipe')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl_migration_ss",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 5,
+						"startTime": "2025-10-13T15:45:00",
+						"endTime": "2025-10-14T15:49:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_migration_ss')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/azure-ir')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "West US 2",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 10,
+							"cleanup": false,
+							"customProperties": []
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dev-adf-ir')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ir-cloud-azure')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "South India",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 10,
+							"cleanup": false,
+							"customProperties": []
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

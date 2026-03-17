@@ -1,0 +1,30 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adf-data-dev-101"
+		},
+		"ls_cloud_ss_connectionString": {
+			"value": ""
+		},
+		"ls_metadata_adls_accountKey": {
+			"value": ""
+		},
+		"ls_onprem_ss_password": {
+			"value": ""
+		},
+		"ls_metadata_adls_properties_typeProperties_url": {
+			"value": "https://externaladls.dfs.core.windows.net/"
+		},
+		"ls_onprem_ss_properties_typeProperties_server": {
+			"value": ".\\SQLEXPRESS"
+		},
+		"ls_onprem_ss_properties_typeProperties_database": {
+			"value": "devonprem"
+		},
+		"ls_onprem_ss_properties_typeProperties_userName": {
+			"value": "MURALIPC\\mural"
+		}
+	}
+}
