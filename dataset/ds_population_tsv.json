@@ -1,5 +1,5 @@
 {
-	"name": "population_tsv",
+	"name": "ds_population_tsv",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "ls_azure_blob",
