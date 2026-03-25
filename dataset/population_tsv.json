@@ -1,0 +1,24 @@
+{
+	"name": "population_tsv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azure_blob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"container": "population"
+			},
+			"columnDelimiter": "\t",
+			"compressionCodec": "deflate",
+			"compressionLevel": "Optimal",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
