@@ -10,10 +10,11 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobStorageLocation",
+				"fileName": "tps00010_tabular.tsv.gz",
 				"container": "population"
 			},
 			"columnDelimiter": "\t",
-			"compressionCodec": "deflate",
+			"compressionCodec": "gzip",
 			"compressionLevel": "Optimal",
 			"escapeChar": "\\",
 			"firstRowAsHeader": true,

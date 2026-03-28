@@ -6,6 +6,7 @@
 				"name": "Validation1",
 				"type": "Validation",
 				"dependsOn": [],
+				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
 						"referenceName": "ds_population_tsv",
@@ -40,8 +41,8 @@
 						"type": "DatasetReference"
 					},
 					"fieldList": [
-						"itemType",
-						"exists"
+						"exists",
+						"itemType"
 					],
 					"storeSettings": {
 						"type": "AzureBlobStorageReadSettings",
@@ -65,12 +66,20 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
+					"expression": {
+						"value": "@and(equals(activity('Get Metadata').output.exists,true),equals(activity('Get Metadata').output.itemType,'File'))",
+						"type": "Expression"
+					},
 					"ifFalseActivities": [
 						{
 							"name": "Fail1",
 							"type": "Fail",
 							"dependsOn": [],
-							"userProperties": []
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Metadata Problem",
+								"errorCode": "100"
+							}
 						}
 					],
 					"ifTrueActivities": [
@@ -87,8 +96,51 @@
 							},
 							"userProperties": [],
 							"typeProperties": {
-								"enableStaging": false
-							}
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"copyBehavior": "FlattenHierarchy"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".tsv"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_population_tsv",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_target_tsv_adls",
+									"type": "DatasetReference"
+								}
+							]
 						}
 					]
 				}
