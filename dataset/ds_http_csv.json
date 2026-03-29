@@ -5,12 +5,25 @@
 			"referenceName": "ls_https",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"Category": {
+				"type": "string",
+				"defaultValue": "test"
+			},
+			"FileName": {
+				"type": "string",
+				"defaultValue": "test"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "HttpServerLocation",
-				"relativeUrl": "covid19/csv/data.csv"
+				"relativeUrl": {
+					"value": "@concat('covid19/',dataset().Category,'/',dataset().FileName)",
+					"type": "Expression"
+				}
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
