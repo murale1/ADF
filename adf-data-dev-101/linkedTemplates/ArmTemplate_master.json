@@ -7,6 +7,14 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "adf-data-dev-101"
 		},
+		"ls_adls_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_adls'"
+		},
+		"ls_azure_blob_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ls_azure_blob'"
+		},
 		"ls_cloud_ss_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ls_cloud_ss'"
@@ -18,6 +26,14 @@
 		"ls_onprem_ss_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'ls_onprem_ss'"
+		},
+		"ls_adls_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://externaladls.dfs.core.windows.net/"
+		},
+		"ls_https_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://opendata.ecdc.europa.eu/"
 		},
 		"ls_metadata_adls_properties_typeProperties_url": {
 			"type": "string",
@@ -62,6 +78,12 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"ls_adls_accountKey": {
+						"value": "[parameters('ls_adls_accountKey')]"
+					},
+					"ls_azure_blob_connectionString": {
+						"value": "[parameters('ls_azure_blob_connectionString')]"
+					},
 					"ls_cloud_ss_connectionString": {
 						"value": "[parameters('ls_cloud_ss_connectionString')]"
 					},
@@ -70,6 +92,12 @@
 					},
 					"ls_onprem_ss_password": {
 						"value": "[parameters('ls_onprem_ss_password')]"
+					},
+					"ls_https_properties_typeProperties_url": {
+						"value": "[parameters('ls_https_properties_typeProperties_url')]"
+					},
+					"ls_adls_properties_typeProperties_url": {
+						"value": "[parameters('ls_adls_properties_typeProperties_url')]"
 					},
 					"ls_metadata_adls_properties_typeProperties_url": {
 						"value": "[parameters('ls_metadata_adls_properties_typeProperties_url')]"
