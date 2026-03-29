@@ -248,6 +248,10 @@
 										"Category": {
 											"value": "@item().Category",
 											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@item().FileName",
+											"type": "Expression"
 										}
 									}
 								}
@@ -255,7 +259,13 @@
 							"outputs": [
 								{
 									"referenceName": "ds_target_csv",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"Category": {
+											"value": "@item().Category",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
