@@ -1,0 +1,29 @@
+{
+	"name": "ds_https_metadata_json",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azure_blob",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "covid_https_metadata.json",
+				"container": "metadata"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"Category": {
+					"type": "string"
+				},
+				"FileName": {
+					"type": "string"
+				}
+			}
+		}
+	}
+}
