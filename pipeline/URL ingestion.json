@@ -1,5 +1,5 @@
 {
-	"name": "covid_pipeline1",
+	"name": "URL ingestion",
 	"properties": {
 		"activities": [
 			{

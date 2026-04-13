@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Execute Pipeline1",
+				"name": "Blob to ADLS Pipline",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"policy": {
@@ -12,14 +12,14 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "covid_pipeline",
+						"referenceName": "Blob to ADLS ingestion",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": false
 				}
 			},
 			{
-				"name": "Execute Pipeline2",
+				"name": "URL pipeline",
 				"type": "ExecutePipeline",
 				"dependsOn": [],
 				"policy": {
@@ -28,7 +28,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "covid_pipeline1",
+						"referenceName": "URL ingestion",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
