@@ -1,32 +1,11 @@
 {
-	"name": "covid_pipeline",
+	"name": "covid_pipeline1",
 	"properties": {
 		"activities": [
 			{
-				"name": "Validation1",
-				"type": "Validation",
+				"name": "Lookup1",
+				"type": "Lookup",
 				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "ds_population_tsv",
-						"type": "DatasetReference"
-					},
-					"timeout": "00:10:00",
-					"sleep": 60
-				}
-			},
-			{
-				"name": "Get Metadata",
-				"type": "GetMetadata",
-				"dependsOn": [
-					{
-						"activity": "Validation1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -36,30 +15,30 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
 					"dataset": {
-						"referenceName": "ds_population_tsv",
+						"referenceName": "ds_https_metadata_json1",
 						"type": "DatasetReference"
 					},
-					"fieldList": [
-						"exists",
-						"itemType"
-					],
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"enablePartitionDiscovery": false
-					},
-					"formatSettings": {
-						"type": "DelimitedTextReadSettings"
-					}
+					"firstRowOnly": false
 				}
 			},
 			{
-				"name": "If Condition1",
-				"type": "IfCondition",
+				"name": "ForEach1",
+				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Get Metadata",
+						"activity": "Lookup1",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -67,25 +46,13 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"expression": {
-						"value": "@and(equals(activity('Get Metadata').output.exists,true),equals(activity('Get Metadata').output.itemType,'File'))",
+					"items": {
+						"value": "@activity('Lookup1').output.value",
 						"type": "Expression"
 					},
-					"ifFalseActivities": [
+					"activities": [
 						{
-							"name": "Fail1",
-							"type": "Fail",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"message": "Metadata Problem",
-								"errorCode": "100"
-							}
-						}
-					],
-					"ifTrueActivities": [
-						{
-							"name": "Copy data1",
+							"name": "Copy data2_copy1",
 							"type": "Copy",
 							"dependsOn": [],
 							"policy": {
@@ -100,9 +67,8 @@
 								"source": {
 									"type": "DelimitedTextSource",
 									"storeSettings": {
-										"type": "AzureBlobStorageReadSettings",
-										"recursive": true,
-										"enablePartitionDiscovery": false
+										"type": "HttpReadSettings",
+										"requestMethod": "GET"
 									},
 									"formatSettings": {
 										"type": "DelimitedTextReadSettings"
@@ -117,7 +83,7 @@
 									"formatSettings": {
 										"type": "DelimitedTextWriteSettings",
 										"quoteAllText": true,
-										"fileExtension": ".tsv"
+										"fileExtension": ".csv"
 									}
 								},
 								"enableStaging": false,
@@ -132,14 +98,30 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "ds_population_tsv",
-									"type": "DatasetReference"
+									"referenceName": "ds_http_csv1",
+									"type": "DatasetReference",
+									"parameters": {
+										"Category": {
+											"value": "@item().Category",
+											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@item().FileName",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
 								{
-									"referenceName": "ds_target_tsv_adls",
-									"type": "DatasetReference"
+									"referenceName": "ds_target_csv1",
+									"type": "DatasetReference",
+									"parameters": {
+										"Category": {
+											"value": "@item().Category",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
