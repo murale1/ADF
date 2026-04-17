@@ -1,0 +1,125 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_dataflow_source1",
+						"type": "DatasetReference"
+					},
+					"name": "sourcestream"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_dataflow_source2",
+						"type": "DatasetReference"
+					},
+					"name": "sourcestream2"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_country_dim",
+						"type": "DatasetReference"
+					},
+					"name": "CountryDimention"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "ColumSelection"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "filter1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          country as string,",
+				"          indicator as string,",
+				"          date as string,",
+				"          year_week as string,",
+				"          value as string,",
+				"          source as string,",
+				"          url as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: true,",
+				"     rowUrlColumn: 'file_name') ~> sourcestream",
+				"source(output(",
+				"          dateRep as string,",
+				"          day as short,",
+				"          month as short,",
+				"          year as short,",
+				"          cases as short,",
+				"          deaths as short,",
+				"          countriesAndTerritories as string,",
+				"          geoId as string,",
+				"          countryterritoryCode as string,",
+				"          popData2019 as integer,",
+				"          continentExp as string,",
+				"          {Cumulative_number_for_14_days_of_COVID-19_cases_per_100000} as double",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: true) ~> sourcestream2",
+				"source(output(",
+				"          name as string,",
+				"          {alpha-2} as string,",
+				"          {alpha-3} as string,",
+				"          {country-code} as string,",
+				"          {iso_3166-2} as string,",
+				"          region as string,",
+				"          {sub-region} as string,",
+				"          {intermediate-region} as string,",
+				"          {region-code} as string,",
+				"          {sub-region-code} as string,",
+				"          {intermediate-region-code} as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> CountryDimention",
+				"sourcestream select(mapColumn(",
+				"          country,",
+				"          indicator,",
+				"          reported_date = date,",
+				"          reported_year_week = year_week,",
+				"          value,",
+				"          source,",
+				"          input_source_file_name = file_name",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> ColumSelection",
+				"ColumSelection lookup(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"sourcestream2 select(mapColumn(",
+				"          Reported_date = dateRep,",
+				"          Day = day,",
+				"          Month = month,",
+				"          Year = year,",
+				"          cases,",
+				"          deaths,",
+				"          Country = countriesAndTerritories,",
+				"          Population = popData2019,",
+				"          country_code_2_digit = geoId,",
+				"          country_code_3_digit = countryterritoryCode,",
+				"          Continent = continentExp",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 filter(Continent == \"Europe\") ~> filter1"
+			]
+		}
+	}
+}
