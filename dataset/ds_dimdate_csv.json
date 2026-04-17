@@ -1,0 +1,65 @@
+{
+	"name": "ds_dimdate_csv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_adls",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "dimdates.csv",
+				"folderPath": "ecdc",
+				"fileSystem": "raw"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Date",
+				"type": "String"
+			},
+			{
+				"name": "CalendarWeek",
+				"type": "String"
+			},
+			{
+				"name": "CalendarWeekStartDate",
+				"type": "String"
+			},
+			{
+				"name": "CalendarWeekEndDate",
+				"type": "String"
+			},
+			{
+				"name": "CalendarDayInWeek",
+				"type": "String"
+			},
+			{
+				"name": "CalendarDayInMonth",
+				"type": "String"
+			},
+			{
+				"name": "CalendarQuarter",
+				"type": "String"
+			},
+			{
+				"name": "CalendarQuarterStartDateId",
+				"type": "String"
+			},
+			{
+				"name": "CalendarQuarterEndDateId",
+				"type": "String"
+			},
+			{
+				"name": "CalendarYear",
+				"type": "String"
+			}
+		]
+	}
+}
